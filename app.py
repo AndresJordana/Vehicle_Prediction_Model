@@ -25,7 +25,7 @@ categories = {
 
 # Initialize the OneHotEncoder with predefined categories
 encoder = OneHotEncoder(categories=list(categories.values()))
-encoder.fit(np.array([list(cat) for cat in categories.values()]).T)
+encoder.fit(np.array([list(cat) for cat in categories.values()]))
 
 def encode_inputs(input_data):
     # Convert input to a 2D list (required by the encoder)
