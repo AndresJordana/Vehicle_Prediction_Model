@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 model_realistic = RandomForestClassifier(random_state=42)
 
 # Encoder used during training
-encoder = OneHotEncoder(sparse=False)
+encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
 
 # Sample categories for encoding (used during training)
 categories = {
@@ -26,12 +26,14 @@ categories = {
     "Education Level": ["High School", "Associate", "Bachelor's", "Master's", "PhD"]
 }
 
+# Fit the encoder with category labels (done during initialization)
+encoder.fit(pd.DataFrame(categories))
+
 def encode_inputs(input_data):
     # Convert input to DataFrame
     input_df = pd.DataFrame([input_data])
 
     # Apply one-hot encoding
-    encoded_input = encoder.fit(categories.values())  # Use categories for fitting
     input_encoded = encoder.transform(input_df)
 
     return input_encoded
