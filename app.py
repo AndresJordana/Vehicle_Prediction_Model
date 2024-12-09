@@ -4,35 +4,49 @@ import numpy as np
 import pickle
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
-# Load the trained model (assuming it's saved locally)
-# Replace 'model_realistic.pkl' with your actual file path
-# with open('model_realistic.pkl', 'rb') as file:
-#     model_realistic = pickle.load(file)
+# Load or Train the Model
+model_file = 'model_realistic.pkl'
+try:
+    # Load the trained model if available
+    with open(model_file, 'rb') as file:
+        model_realistic = pickle.load(file)
+except FileNotFoundError:
+    # If model not found, train it using sample data
+    st.warning("Model not found, training a new model.")
 
-# For demonstration, using a placeholder model
-model_realistic = RandomForestClassifier(random_state=42)
+    # Example training data
+    df = pd.DataFrame({
+        "Gender": ["Male", "Female", "Female", "Male"],
+        "Income": ["20000-39999", "40000-59999", "100000+", "60000-79999"],
+        "Age Range": ["18-25", "26-35", "36-50", "51+"],
+        "Household Size": [1, 2, 5, 4],
+        "Location": ["Urban", "Suburban", "Rural", "Urban"],
+        "Education Level": ["High School", "Bachelor's", "PhD", "Master's"],
+        "Toyota Model": ["Corolla", "RAV4", "Highlander", "Camry"]
+    })
 
-# Sample categories for encoding (used during training)
-categories = {
-    "Gender": ["Male", "Female", "Non-binary"],
-    "Income": ["20000-39999", "40000-59999", "60000-79999", "80000-99999", "100000+"],
-    "Age Range": ["18-25", "26-35", "36-50", "51+"],
-    "Household Size": [1, 2, 3, 4, 5, 6, 7, 8],
-    "Location": ["Urban", "Suburban", "Rural"],
-    "Education Level": ["High School", "Associate", "Bachelor's", "Master's", "PhD"]
-}
+    # Define features and target
+    X = df.drop("Toyota Model", axis=1)
+    y = df["Toyota Model"]
 
-# Create example data for fitting the encoder
-example_data = [
-    ["Male", "20000-39999", "18-25", 1, "Urban", "High School"],
-    ["Female", "40000-59999", "26-35", 2, "Suburban", "Associate"]
-]
+    # Initialize the encoder and encode features
+    encoder = OneHotEncoder()
+    X_encoded = encoder.fit_transform(X)
 
-# Initialize the OneHotEncoder with predefined categories
-encoder = OneHotEncoder(categories=list(categories.values()))
-encoder.fit(example_data)
+    # Train-test split
+    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
 
+    # Train the RandomForestClassifier
+    model_realistic = RandomForestClassifier(random_state=42)
+    model_realistic.fit(X_train, y_train)
+
+    # Save the trained model
+    with open(model_file, 'wb') as file:
+        pickle.dump(model_realistic, file)
+
+# Function to encode user input
 def encode_inputs(input_data):
     # Convert input to a 2D list (required by the encoder)
     input_list = [[
@@ -54,12 +68,12 @@ st.title("Toyota Vehicle Prediction App")
 st.write("Predict the most likely Toyota vehicle a customer might purchase based on their profile.")
 
 # Input fields
-gender = st.selectbox("Gender", categories["Gender"])
-income = st.selectbox("Income Range", categories["Income"])
-age_range = st.selectbox("Age Range", categories["Age Range"])
+gender = st.selectbox("Gender", ["Male", "Female", "Non-binary"])
+income = st.selectbox("Income Range", ["20000-39999", "40000-59999", "60000-79999", "80000-99999", "100000+"])
+age_range = st.selectbox("Age Range", ["18-25", "26-35", "36-50", "51+"])
 household_size = st.slider("Household Size", min_value=1, max_value=8, step=1)
-location = st.selectbox("Location", categories["Location"])
-education_level = st.selectbox("Education Level", categories["Education Level"])
+location = st.selectbox("Location", ["Urban", "Suburban", "Rural"])
+education_level = st.selectbox("Education Level", ["High School", "Associate", "Bachelor's", "Master's", "PhD"])
 
 # Prediction
 if st.button("Predict Vehicle"):
