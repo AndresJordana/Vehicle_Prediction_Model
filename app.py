@@ -23,7 +23,7 @@ with open(MODEL_LOCAL_PATH, 'rb') as file:
     model_realistic = pickle.load(file)
 
 # Encoder used during training
-encoder = OneHotEncoder(sparse=False)
+encoder = OneHotEncoder()
 
 # Sample categories for encoding (used during training)
 categories = {
