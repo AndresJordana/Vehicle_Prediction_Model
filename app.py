@@ -23,9 +23,15 @@ categories = {
     "Education Level": ["High School", "Associate", "Bachelor's", "Master's", "PhD"]
 }
 
+# Create example data for fitting the encoder
+example_data = [
+    ["Male", "20000-39999", "18-25", 1, "Urban", "High School"],
+    ["Female", "40000-59999", "26-35", 2, "Suburban", "Associate"]
+]
+
 # Initialize the OneHotEncoder with predefined categories
 encoder = OneHotEncoder(categories=list(categories.values()))
-encoder.fit(np.array([list(cat) for cat in categories.values()]))
+encoder.fit(example_data)
 
 def encode_inputs(input_data):
     # Convert input to a 2D list (required by the encoder)
