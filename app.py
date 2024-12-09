@@ -24,7 +24,7 @@ categories = {
 }
 
 # Initialize the OneHotEncoder with predefined categories
-encoder = OneHotEncoder(categories=list(categories.values()), sparse=False, handle_unknown='ignore')
+encoder = OneHotEncoder(categories=list(categories.values()))
 encoder.fit([list(cat) for cat in categories.values()])
 
 def encode_inputs(input_data):
