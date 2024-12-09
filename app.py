@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 model_realistic = RandomForestClassifier(random_state=42)
 
 # Encoder used during training
-encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+encoder = OneHotEncoder()
 
 # Sample categories for encoding (used during training)
 categories = {
