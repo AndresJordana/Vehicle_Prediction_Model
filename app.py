@@ -4,62 +4,44 @@ import numpy as np
 import pickle
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 
-# Load or Train the Model
-model_file = 'model_realistic.pkl'
-try:
-    # Load the trained model if available
-    with open(model_file, 'rb') as file:
-        model_realistic = pickle.load(file)
-except FileNotFoundError:
-    # If model not found, train it using sample data
-    st.warning("Model not found, training a new model.")
+# Load the trained model from GitHub
+import requests
+import os
 
-    # Example training data
-    df = pd.DataFrame({
-        "Gender": ["Male", "Female", "Female", "Male"],
-        "Income": ["20000-39999", "40000-59999", "100000+", "60000-79999"],
-        "Age Range": ["18-25", "26-35", "36-50", "51+"],
-        "Household Size": [1, 2, 5, 4],
-        "Location": ["Urban", "Suburban", "Rural", "Urban"],
-        "Education Level": ["High School", "Bachelor's", "PhD", "Master's"],
-        "Toyota Model": ["Corolla", "RAV4", "Highlander", "Camry"]
-    })
+MODEL_URL = 'https://raw.githubusercontent.com/AndresJordana/Vehicle_Prediction_Model/main/model_realistic.pkl'
+MODEL_LOCAL_PATH = 'model_realistic.pkl'
 
-    # Define features and target
-    X = df.drop("Toyota Model", axis=1)
-    y = df["Toyota Model"]
+# Download the model file if not already present locally
+if not os.path.exists(MODEL_LOCAL_PATH):
+    response = requests.get(MODEL_URL)
+    with open(MODEL_LOCAL_PATH, 'wb') as file:
+        file.write(response.content)
 
-    # Initialize the encoder and encode features
-    encoder = OneHotEncoder()
-    X_encoded = encoder.fit_transform(X)
+# Load the trained model
+with open(MODEL_LOCAL_PATH, 'rb') as file:
+    model_realistic = pickle.load(file)
 
-    # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+# Encoder used during training
+encoder = OneHotEncoder(sparse=False)
 
-    # Train the RandomForestClassifier
-    model_realistic = RandomForestClassifier(random_state=42)
-    model_realistic.fit(X_train, y_train)
+# Sample categories for encoding (used during training)
+categories = {
+    "Gender": ["Male", "Female", "Non-binary"],
+    "Income": ["20000-39999", "40000-59999", "60000-79999", "80000-99999", "100000+"],
+    "Age Range": ["18-25", "26-35", "36-50", "51+"],
+    "Household Size": list(range(1, 9)),
+    "Location": ["Urban", "Suburban", "Rural"],
+    "Education Level": ["High School", "Associate", "Bachelor's", "Master's", "PhD"]
+}
 
-    # Save the trained model
-    with open(model_file, 'wb') as file:
-        pickle.dump(model_realistic, file)
-
-# Function to encode user input
 def encode_inputs(input_data):
-    # Convert input to a 2D list (required by the encoder)
-    input_list = [[
-        input_data["Gender"],
-        input_data["Income"],
-        input_data["Age Range"],
-        input_data["Household Size"],
-        input_data["Location"],
-        input_data["Education Level"]
-    ]]
+    # Convert input to DataFrame
+    input_df = pd.DataFrame([input_data])
 
     # Apply one-hot encoding
-    input_encoded = encoder.transform(input_list)
+    encoded_input = encoder.fit(categories.values())  # Use categories for fitting
+    input_encoded = encoder.transform(input_df)
 
     return input_encoded
 
@@ -68,12 +50,12 @@ st.title("Toyota Vehicle Prediction App")
 st.write("Predict the most likely Toyota vehicle a customer might purchase based on their profile.")
 
 # Input fields
-gender = st.selectbox("Gender", ["Male", "Female", "Non-binary"])
-income = st.selectbox("Income Range", ["20000-39999", "40000-59999", "60000-79999", "80000-99999", "100000+"])
-age_range = st.selectbox("Age Range", ["18-25", "26-35", "36-50", "51+"])
+gender = st.selectbox("Gender", categories["Gender"])
+income = st.selectbox("Income Range", categories["Income"])
+age_range = st.selectbox("Age Range", categories["Age Range"])
 household_size = st.slider("Household Size", min_value=1, max_value=8, step=1)
-location = st.selectbox("Location", ["Urban", "Suburban", "Rural"])
-education_level = st.selectbox("Education Level", ["High School", "Associate", "Bachelor's", "Master's", "PhD"])
+location = st.selectbox("Location", categories["Location"])
+education_level = st.selectbox("Education Level", categories["Education Level"])
 
 # Prediction
 if st.button("Predict Vehicle"):
