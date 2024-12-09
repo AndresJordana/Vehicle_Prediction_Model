@@ -13,28 +13,33 @@ from sklearn.ensemble import RandomForestClassifier
 # For demonstration, using a placeholder model
 model_realistic = RandomForestClassifier(random_state=42)
 
-# Encoder used during training
-encoder = OneHotEncoder()
-
 # Sample categories for encoding (used during training)
 categories = {
     "Gender": ["Male", "Female", "Non-binary"],
     "Income": ["20000-39999", "40000-59999", "60000-79999", "80000-99999", "100000+"],
     "Age Range": ["18-25", "26-35", "36-50", "51+"],
-    "Household Size": list(range(1, 9)),
+    "Household Size": [1, 2, 3, 4, 5, 6, 7, 8],
     "Location": ["Urban", "Suburban", "Rural"],
     "Education Level": ["High School", "Associate", "Bachelor's", "Master's", "PhD"]
 }
 
-# Fit the encoder with category labels (done during initialization)
-encoder.fit(pd.DataFrame(categories))
+# Initialize the OneHotEncoder with predefined categories
+encoder = OneHotEncoder(categories=list(categories.values()), sparse=False, handle_unknown='ignore')
+encoder.fit([list(cat) for cat in categories.values()])
 
 def encode_inputs(input_data):
-    # Convert input to DataFrame
-    input_df = pd.DataFrame([input_data])
+    # Convert input to a 2D list (required by the encoder)
+    input_list = [[
+        input_data["Gender"],
+        input_data["Income"],
+        input_data["Age Range"],
+        input_data["Household Size"],
+        input_data["Location"],
+        input_data["Education Level"]
+    ]]
 
     # Apply one-hot encoding
-    input_encoded = encoder.transform(input_df)
+    input_encoded = encoder.transform(input_list)
 
     return input_encoded
 
