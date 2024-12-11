@@ -11,9 +11,8 @@ MODEL_URL = 'https://raw.githubusercontent.com/AndresJordana/Vehicle_Prediction_
 MODEL_LOCAL_PATH = 'model_realistic.pkl'
 
 # Set OpenAI API key
-os.environ['OPENAI_API_KEY'] = st.secrets["OPENAI_API_KEY"]
+open.api_key = st.secrets["OPENAI_API_KEY"]
 
-client = OPENAI()
 
 # Download the model file if not already present locally
 @st.cache_data
