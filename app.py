@@ -9,7 +9,6 @@ from sklearn.preprocessing import OneHotEncoder
 # Define constants
 MODEL_URL = 'https://raw.githubusercontent.com/AndresJordana/Vehicle_Prediction_Model/main/model_realistic.pkl'
 MODEL_LOCAL_PATH = 'model_realistic.pkl'
-OPENAI_API_KEY = "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"  # Replace with your OpenAI API key
 
 # Set OpenAI API key
 openai.api_key = OPENAI_API_KEY
