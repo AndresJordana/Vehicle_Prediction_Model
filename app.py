@@ -48,6 +48,16 @@ encoder.fit(pd.DataFrame({key: [val[0]] for key, val in categories.items()}))
 def encode_inputs(input_data):
     input_df = pd.DataFrame([input_data])
     encoded_input = encoder.transform(input_df).toarray()
+
+    # Align the number of features with the model's expectations
+    num_features_model = model_realistic.n_features_in_
+    if encoded_input.shape[1] != num_features_model:
+        missing_features = num_features_model - encoded_input.shape[1]
+        if missing_features > 0:
+            encoded_input = np.hstack([encoded_input, np.zeros((encoded_input.shape[0], missing_features))])
+        else:
+            encoded_input = encoded_input[:, :num_features_model]
+
     return encoded_input
 
 # Streamlit app setup
