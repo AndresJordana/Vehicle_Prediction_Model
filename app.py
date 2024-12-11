@@ -3,11 +3,16 @@ import pandas as pd
 import numpy as np
 import pickle
 import requests
+import openai
 from sklearn.preprocessing import OneHotEncoder
 
 # Define constants
 MODEL_URL = 'https://raw.githubusercontent.com/AndresJordana/Vehicle_Prediction_Model/main/model_realistic.pkl'
 MODEL_LOCAL_PATH = 'model_realistic.pkl'
+OPENAI_API_KEY = "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"  # Replace with your OpenAI API key
+
+# Set OpenAI API key
+openai.api_key = OPENAI_API_KEY
 
 # Download the model file if not already present locally
 @st.cache_data
@@ -60,6 +65,22 @@ def encode_inputs(input_data):
 
     return encoded_input
 
+# Function to fetch vehicle specs using OpenAI
+def fetch_vehicle_specs(vehicle_name):
+    """Fetch specifications for a given vehicle using OpenAI."""
+    try:
+        prompt = f"Provide detailed specifications for the Toyota {vehicle_name}."
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=200,
+            temperature=0.7
+        )
+        specs = response.choices[0].text.strip()
+        return specs
+    except Exception as e:
+        return f"Error fetching vehicle specifications: {e}"
+
 # Streamlit app setup
 st.title("Toyota Vehicle Prediction App")
 st.write("Predict the most likely Toyota vehicle a customer might purchase based on their profile.")
@@ -90,7 +111,13 @@ if st.button("Predict Vehicle"):
     # Make prediction
     try:
         prediction = model_realistic.predict(encoded_input)
+        vehicle_name = prediction[0]
         st.subheader("Predicted Vehicle")
-        st.write(prediction[0])
+        st.write(vehicle_name)
+
+        # Fetch and display vehicle specifications
+        st.subheader("Vehicle Specifications")
+        specs = fetch_vehicle_specs(vehicle_name)
+        st.write(specs)
     except Exception as e:
         st.error(f"Error making prediction: {e}")
